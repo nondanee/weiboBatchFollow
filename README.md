@@ -2,7 +2,7 @@
 好像并没有什么卵用
 
 ## 起因
-<div><img src="./image/sshot.png" width="320" align="left" /></div>
+<img src="./image/sshot.png" width="480"/>
 
 ## 使用方法
 ### 得到A账号关注列表
