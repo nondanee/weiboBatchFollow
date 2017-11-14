@@ -28,7 +28,7 @@
 		xhr.send("uid="+uid+"&objectid=&f=1&extra=&refer_sort=&refer_flag=1005050001_&location=page_100505_home&oid="+uid+"&wforce=1&nogroup=false&fnick=&refer_lflag=&refer_from=profile_headerv6&_t=0")
 	}
 	function followByList(index){
-		if (index>list.length){
+		if (index>=list.length){
 			console.log("全部完成")
 			return
 		}
