@@ -11,8 +11,7 @@
 3. F12打开控制台，复制下面的代码，粘贴到控制台，等待结果并复制
 ```javascript
 (function(){
-	let uid = config.uid
-	let follows = []
+	let uid = config.uid, follows = []
 	function pageQuery(page = 1){
 		let xhr = new XMLHttpRequest()	
 		xhr.onreadystatechange = function(){
@@ -32,8 +31,8 @@
 注：由于接口原因可能无法获得完整关注列表
 
 ### B账号按列表批量关注
-1. 前往PC版首页([https://weibo.com/](https://weibo.com/))
-2. 注销A账号，登录B账号
+1. 前往PC版首页([www.weibo.com](https://www.weibo.com))
+2. 登出A账号，登录B账号
 3. F12打开控制台，复制下面的代码并填入上一步得到的列表，粘贴到控制台，等待全部关注完成
 ```javascript
 (function(list){
