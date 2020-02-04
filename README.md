@@ -11,21 +11,25 @@
 3. 右键 "检查" 打开开发者工具，复制下面的代码，粘贴到控制台，等待结果并复制
 ```javascript
 (() => {
-	let uid = config.uid, follows = []
-	const pageQuery = (page = 1) => {
-		let xhr = new XMLHttpRequest()	
-		xhr.onreadystatechange = () => {
-			if(xhr.readyState == 4 && xhr.status == 200){
-				let data = JSON.parse(xhr.responseText).data
-				if(data.msg == '这里还没有内容') return console.log(JSON.stringify(follows))
-				data.cards.forEach(card => follows.push(card.user.id))
-				pageQuery(page + 1)
-			}
-		}
-		xhr.open('GET', `/api/container/getSecond?luicode=10000011&lfid=100505${uid}&uid=${uid}&containerid=100505${uid}_-_FOLLOWERS&page=${page}`)
-		xhr.send()
-	}
-	pageQuery()
+	const {uid} = config
+	const follows = []
+	const query = (page) =>
+		fetch(`/api/container/getSecond?luicode=10000011&lfid=100505${uid}&uid=${uid}&containerid=100505${uid}_-_FOLLOWERS&page=${page}`)
+		.then(response => response.json())
+		.then(body => {
+			const {data} = body
+			if (data.msg === '这里还没有内容') return Promise.reject(new Error('Finish'))
+			data.cards.forEach(card => follows.push(card.user.id))
+		})
+
+	const polling = (page = 1) =>
+		query(page).then(() =>
+			new Promise(resolve =>
+				setTimeout(() => resolve(polling(page + 1)), 1500)
+			)
+		)
+
+	polling().catch(error => console.warn(error.message + '\n\n' + JSON.stringify(follows)))
 })()
 ```
 注：由于接口限制可能无法获得完整的关注列表
