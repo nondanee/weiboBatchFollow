@@ -18,7 +18,7 @@
 		.then(response => response.json())
 		.then(body => {
 			const {data} = body
-			if (data.msg === '这里还没有内容') return Promise.reject(new Error('Finish'))
+			if (data.msg === '这里还没有内容') return Promise.reject(new Error('finish'))
 			data.cards.forEach(card => follows.push(card.user.id))
 		})
 
@@ -29,7 +29,8 @@
 			)
 		)
 
-	polling().catch(error => console.warn(error.message + '\n\n' + JSON.stringify(follows)))
+	polling()
+	.catch(error => console.warn(`${error.message === 'finish' ? '获取完成' : `出错了 (${error.message})` }\n\n${JSON.stringify(follows)}`))
 })()
 ```
 注：由于接口限制可能无法获得完整的关注列表
@@ -40,29 +41,38 @@
 3. 右键 "检查" 打开开发者工具，复制下面的代码并填入上一步得到的列表，粘贴到控制台，等待全部关注完成
 ```javascript
 (list => {
-	let index = -1, length = list.length
-	const follow = uid => {
-		let xhr = new XMLHttpRequest()
-		xhr.onreadystatechange = () => {
-			if(xhr.readyState == 4 && xhr.status == 200){
-				let data = JSON.parse(xhr.responseText)
-				if(data.code == 100000)
-					console.log(`${index + 1}/${length}`, uid, data.data.fnick, '关注成功')
-				else if(data.code == 100001)
-					console.log(`${index + 1}/${length}`, uid, '关注失败')
+	let index = 0
+	const {length} = list
+	const failed = []
+	const follow = uid =>
+		fetch(`/aj/f/followed?ajwvr=6&__rnd=${Date.now()}`, {
+			method: 'POST',
+			headers: {'content-type': 'application/x-www-form-urlencoded'},
+			body: `uid=${uid}&objectid=&f=1&extra=&refer_sort=&refer_flag=1005050001_&location=page_100505_home&oid=${uid}&wforce=1&nogroup=false&fnick=&refer_lflag=&refer_from=profile_headerv6&template=7&special_focus=1&isrecommend=1&is_special=0&_t=0`
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.code === '100000')
+				console.log(`${index}/${length}`, uid, data.data.fnick, '关注成功')
+			else {
+				console.log(`${index}/${length}`, uid, '关注失败')
+				failed.push(uid)
+				if (data.code === '100027') return Promise.reject(new Error('captcha is required'))
 			}
-		}
-		xhr.open('POST', `/aj/f/followed?ajwvr=6&__rnd=${Date.now()}`)
-		xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
-		xhr.send(`uid=${uid}&objectid=&f=1&extra=&refer_sort=&refer_flag=1005050001_&location=page_100505_home&oid=${uid}&wforce=1&nogroup=false&fnick=&refer_lflag=&refer_from=profile_headerv6&_t=0`)
-	}
-	let scheduled = setInterval(() => {
-		index += 1
-		follow(list[index])
-	}, 2000)
-	setTimeout(() => {
-		clearTimeout(scheduled)
-	}, 2000 * length)
+		})
+
+	const subscribe = () =>
+		index >= length
+			? Promise.resolve()
+			: follow(list[index++]).then(() =>
+				new Promise(resolve =>
+					setTimeout(() => resolve(subscribe()), 2000)
+				)
+			)
+
+	subscribe()
+	.catch(error => console.error(`出错了 (${error.message})${list.slice(index).length ? `\n\n以下 ID 还未处理，请之后再试\n\n${JSON.stringify(list.slice(index))}` : ''}`))
+	.then(() => failed.length && console.warn(`以下 ID 关注失败，请重试或手动关注\n\n${JSON.stringify(failed)}`))
 })(/*上一步的结果*/)
 ```
 注：接口似乎完全不管重复关注
