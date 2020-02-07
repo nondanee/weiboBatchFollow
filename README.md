@@ -13,7 +13,8 @@
 (() => {
 	const {uid} = config
 	const follows = []
-	const query = (page) =>
+	const sleep = (time = 1500) => new Promise(resolve => setTimeout(() => resolve(), time))
+	const query = page =>
 		fetch(`/api/container/getSecond?luicode=10000011&lfid=100505${uid}&uid=${uid}&containerid=100505${uid}_-_FOLLOWERS&page=${page}`)
 		.then(response => response.json())
 		.then(body => {
@@ -21,13 +22,7 @@
 			if (data.msg === '这里还没有内容') return Promise.reject(new Error('finish'))
 			data.cards.forEach(card => follows.push(card.user.id))
 		})
-
-	const polling = (page = 1) =>
-		query(page).then(() =>
-			new Promise(resolve =>
-				setTimeout(() => resolve(polling(page + 1)), 1500)
-			)
-		)
+	const polling = (page = 1) => query(page).then(sleep).then(() => polling(page + 1))
 
 	polling()
 	.catch(error => console.warn(`${error.message === 'finish' ? '获取完成' : `出错了 (${error.message})` }\n\n${JSON.stringify(follows)}`))
@@ -44,6 +39,7 @@
 	let index = 0
 	const {length} = list
 	const failed = []
+	const sleep = (time = 2000) => new Promise(resolve => setTimeout(() => resolve(), time))
 	const follow = uid =>
 		fetch(`/aj/f/followed?ajwvr=6&__rnd=${Date.now()}`, {
 			method: 'POST',
@@ -60,15 +56,7 @@
 				if (data.code === '100027') return Promise.reject(new Error('captcha is required'))
 			}
 		})
-
-	const subscribe = () =>
-		index >= length
-			? Promise.resolve()
-			: follow(list[index++]).then(() =>
-				new Promise(resolve =>
-					setTimeout(() => resolve(subscribe()), 2000)
-				)
-			)
+	const subscribe = () => index >= length ? Promise.resolve() : follow(list[index++]).then(sleep).then(subscribe)
 
 	subscribe()
 	.catch(error => console.error(`出错了 (${error.message})${list.slice(index).length ? `\n\n以下 ID 还未处理，请之后再试\n\n${JSON.stringify(list.slice(index))}` : ''}`))
