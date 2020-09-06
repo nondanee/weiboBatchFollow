@@ -9,6 +9,7 @@
 1. 前往微博 H5 版首页 ([https://m.weibo.cn](https://m.weibo.cn))
 2. 登录 A 账号
 3. 右键 "检查" 打开开发者工具，复制下面的代码，粘贴到控制台，等待结果并复制
+> 时间可能要持续1~2分钟才能拿到结果
 ```javascript
 (() => {
 	const {uid} = config
@@ -34,12 +35,14 @@
 1. 前往 PC 版首页 ([www.weibo.com](https://www.weibo.com))
 2. 退出 A 账号，登录 B 账号
 3. 右键 "检查" 打开开发者工具，复制下面的代码并填入上一步得到的列表，粘贴到控制台，等待全部关注完成
+> 微博对API调用次数以后限制，如果关注数比较多，建议分批次执行
 ```javascript
 (list => {
 	let index = 0
 	const {length} = list
 	const failed = []
-	const sleep = (time = 2000) => new Promise(resolve => setTimeout(() => resolve(), time))
+	const randomTime = () => { return Math.round(Math.random()*100) };
+	const sleep = (time = 4000, deviation = randomTime()) => new Promise(resolve => setTimeout(() => resolve(), time+deviation));
 	const follow = uid =>
 		fetch(`/aj/f/followed?ajwvr=6&__rnd=${Date.now()}`, {
 			method: 'POST',
