@@ -48,7 +48,7 @@
 	const { length } = list
 	const failed = []
 	const deviation = () => Math.round(Math.random() * 100)
-	const sleep = time => () => new Promise(resolve => setTimeout(resolve, time));
+	const sleep = time => () => new Promise(resolve => setTimeout(resolve, time))
 	const follow = uid =>
 		fetch(`/aj/f/followed?ajwvr=6&__rnd=${Date.now()}`, {
 			method: 'POST',
