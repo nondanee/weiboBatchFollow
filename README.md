@@ -17,18 +17,21 @@
 
 ```javascript
 (() => {
-	const { uid } = config
 	const follows = []
 	const sleep = time => () => new Promise(resolve => setTimeout(resolve, time))
 	const query = page =>
-		fetch(`/api/container/getSecond?luicode=10000011&lfid=100505${uid}&uid=${uid}&containerid=100505${uid}_-_FOLLOWERS&page=${page}`)
+		fetch(
+			`/api/container/getIndex?containerid=231093_-_selffollowed&page=${page}`, 
+			{ headers: { 'X-XSRF-TOKEN': (document.cookie.match(/XSRF-TOKEN=([^;$]+)/) || [])[1] } }
+		)
 			.then(response => response.json())
 			.then(body => {
-				const { data } = body
-				if (data.msg === '这里还没有内容') return Promise.reject(new Error('finish'))
-				data.cards.forEach(card => follows.push(card.user.id))
+				const { data, msg, ok } = body
+				if (msg === '这里还没有内容') return Promise.reject(new Error('finish'))
+				if (ok !== 1) return Promise.reject(new Error(msg))
+				data.cards.forEach(group => group.card_group.forEach(card => card.user && follows.push(card.user.id)))
 			})
-	const polling = (page = 1) => query(page).then(sleep(1500)).then(() => polling(page + 1))
+	const polling = (page = 4) => query(page).then(sleep(1500)).then(() => polling(page + 1))
 
 	polling()
 		.catch(error => console.warn(`${error.message === 'finish' ? '获取完成' : `出错了 (${error.message})` }\n\n${JSON.stringify(follows)}`))
