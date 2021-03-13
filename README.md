@@ -31,7 +31,7 @@
 				if (ok !== 1) return Promise.reject(new Error(msg))
 				data.cards.forEach(group => group.card_group.forEach(card => card.user && follows.push(card.user.id)))
 			})
-	const polling = (page = 4) => query(page).then(sleep(1500)).then(() => polling(page + 1))
+	const polling = (page = 1) => query(page).then(sleep(1500)).then(() => polling(page + 1))
 
 	polling()
 		.catch(error => console.warn(`${error.message === 'finish' ? '获取完成' : `出错了 (${error.message})` }\n\n${JSON.stringify(follows)}`))
