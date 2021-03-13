@@ -22,8 +22,8 @@
 	const query = page =>
 		fetch(
 			`/api/container/getIndex?containerid=231093_-_selffollowed&page=${page}`, 
-			{ headers: { 'X-XSRF-TOKEN': (document.cookie.match(/XSRF-TOKEN=([^;$]+)/) || [])[1] } }
-		)
+			{ headers: { 'X-XSRF-TOKEN': (document.cookie.match(/XSRF-TOKEN=([^;$]+)/) || [])[1] || '' } }
+		) 
 			.then(response => response.json())
 			.then(body => {
 				const { data, msg, ok } = body
